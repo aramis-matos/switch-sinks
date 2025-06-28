@@ -1,3 +1,3 @@
-module switch-source
+module switch-sink
 
 go 1.17

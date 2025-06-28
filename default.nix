@@ -14,7 +14,7 @@
 }:
 
 buildGoApplication {
-  pname = "switch-source";
+  pname = "switch-sink";
   version = "0.1";
   pwd = ./.;
   src = ./.;
