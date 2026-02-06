@@ -1,7 +1,6 @@
 use std::env;
 use std::iter::zip;
 use std::process::Command;
-use which::which;
 
 fn get_items(item: &str) -> Vec<String> {
     let cmd = format!("pactl list sinks | grep -E '{item}: .*' | sed 's/{item}: //'");
