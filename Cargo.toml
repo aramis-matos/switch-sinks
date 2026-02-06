@@ -1,5 +1,5 @@
 [package]
-name = "switch-sinks"
+name = "switch-sink"
 version = "0.1.0"
 edition = "2024"
 
