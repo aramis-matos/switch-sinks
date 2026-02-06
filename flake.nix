@@ -22,8 +22,8 @@
       in
       {
         packages = rec {
-          switch-sinks = pkgs.rustPlatform.buildRustPackage {
-            pname = "switch-sinks";
+          switch-sink = pkgs.rustPlatform.buildRustPackage {
+            pname = "switch-sink";
             version = "1.0.0";
             src = ./.;
 
@@ -43,7 +43,7 @@
             ];
 
           };
-          default = switch-sinks;
+          default = switch-sink;
         };
 
         devShells.default = pkgs.mkShell {
