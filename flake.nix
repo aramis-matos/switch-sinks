@@ -1,29 +1,66 @@
 {
-  description = "A basic gomod2nix flake";
+  description = "A very basic flake";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.gomod2nix.url = "github:nix-community/gomod2nix";
-  inputs.gomod2nix.inputs.nixpkgs.follows = "nixpkgs";
-  inputs.gomod2nix.inputs.flake-utils.follows = "flake-utils";
+  inputs = {
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  };
 
-  outputs = { self, nixpkgs, flake-utils, gomod2nix }:
-    (flake-utils.lib.eachDefaultSystem
-      (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
+  outputs =
+    {
+      self,
+      flake-utils,
+      nixpkgs,
+      rust-overlay,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = (import nixpkgs) { inherit system overlays; };
+      in
+      {
+        packages = rec {
+          switch-sinks = pkgs.rustPlatform.buildRustPackage {
+            pname = "switch-sinks";
+            version = "1.0.0";
+            src = ./.;
 
-          # The current default sdk for macOS fails to compile go projects, so we use a newer one for now.
-          # This has no effect on other platforms.
-          callPackage = pkgs.callPackage;
-        in
-        {
-          packages.default = callPackage ./. {
-            inherit (gomod2nix.legacyPackages.${system}) buildGoApplication;
+            cargoLock = {
+              lockFile = ./Cargo.lock;
+            };
+
+            buildInputs = with pkgs; [
+              rust-analyzer
+            ];
+
+            nativeBuildInputs = with pkgs; [
+              rust-analyzer
+              pulseaudio
+              bash
+
+            ];
+
           };
-          devShells.default = callPackage ./shell.nix {
-            inherit (gomod2nix.legacyPackages.${system}) mkGoEnv gomod2nix;
-          };
-        })
+          default = switch-sinks;
+        };
+
+        devShells.default = pkgs.mkShell {
+          shellHook = ''
+            export RUST_SRC_PATH=${pkgs.rustPlatform.rustLibSrc}
+          '';
+          buildInputs = with pkgs; [
+            cargo
+            cargo-udeps
+            clippy
+            rust-analyzer
+            rustfmt
+            rustc
+            code
+          ];
+        };
+      }
     );
+
 }
